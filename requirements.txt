@@ -1,0 +1,9 @@
+tensorflow
+numpy
+keras
+pytesseract
+io
+cv2
+os
+re
+pandas
