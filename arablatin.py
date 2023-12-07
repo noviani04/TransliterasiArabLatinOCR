@@ -4,7 +4,7 @@ import io
 from keras.utils import load_img
 import model
 
-pytesseract.pytesseract.tesseract_cmd = r'E:\Semester_akhir\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = None
 
 import cv2
 #from pytesseract import Output
