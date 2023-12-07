@@ -78,9 +78,11 @@ if uploaded_file is not None:
     image = load_img(io.BytesIO(uploaded_file.read()))
     # Showing image that was upload
     st.image(image, caption="Uploaded Image", use_column_width=True)
+    img = Image.open(image)
+    img = img.save("img.jpg")
 
     #text = pytesseract.image_to_string(img, lang='ara')
-    a = get_string(image)
+    a = get_string("img.jpg")
     y = re.sub(r"[\n\t\s]+", " ", a)
 
     # Print
