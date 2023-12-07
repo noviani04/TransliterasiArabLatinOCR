@@ -75,12 +75,12 @@ uploaded_file = st.file_uploader('File Uploader', type=["png", "jpg", "jpeg"])
 
 # Prediction for upload file
 if uploaded_file is not None:
-    img = load_img(io.BytesIO(uploaded_file.read()))
+    image = load_img(io.BytesIO(uploaded_file.read()))
     # Showing image that was upload
-    st.image(img, caption="Uploaded Image", use_column_width=True)
+    st.image(image, caption="Uploaded Image", use_column_width=True)
 
     #text = pytesseract.image_to_string(img, lang='ara')
-    a = get_string(img)
+    a = get_string(image)
     y = re.sub(r"[\n\t\s]+", " ", a)
 
     # Print
