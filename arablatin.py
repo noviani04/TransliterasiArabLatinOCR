@@ -80,7 +80,7 @@ if uploaded_file is not None:
     st.image(img, caption="Uploaded Image", use_column_width=True)
 
     #text = pytesseract.image_to_string(img, lang='ara')
-    a = get_string('tes3.jpeg')
+    a = get_string(img)
     y = re.sub(r"[\n\t\s]+", " ", a)
 
     # Print
