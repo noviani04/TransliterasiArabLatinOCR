@@ -8,7 +8,7 @@ pytesseract.pytesseract.tesseract_cmd = r'E:\Semester_akhir\Tesseract-OCR\tesser
 
 import cv2
 #from pytesseract import Output
-#from PIL import Image
+from PIL import Image
 import pytesseract
 #import sys
 import numpy as np
