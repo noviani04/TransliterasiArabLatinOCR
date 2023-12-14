@@ -4,4 +4,4 @@ keras
 pytesseract
 tesseract-ocr
 pandas
-opencv-python-headless==4.5.5.64
+opencv-python-headless
