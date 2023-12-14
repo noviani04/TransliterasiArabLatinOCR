@@ -1,78 +1,62 @@
-import keras
-latent_dim = 256
+import pandas as pd
 import numpy as np
 import tensorflow as tf
-from tensorflow import keras
-import pandas as pd
+from keras.models import Model, load_model
+from keras.layers import Input, LSTM, Dense
 
-batch_size = 64  # Batch size for training.
-epochs = 100  # Number of epochs to train for.
-latent_dim = 256  # Latent dimensionality of the encoding space.
-num_samples = 5000  # Number of samples to train on.
-# Path to the data txt file on disk.
-data_path = 'datasetversikata.txt'
-with open(data_path, encoding='utf-8') as f:
-    lines = f.readlines()
-lines[5]
+dataset = pd.read_excel('Datasetversikata.xlsx', header=None, skiprows=1)
+dataset[0] = dataset[0].astype(str)
+dataset[1] = dataset[1].astype(str)
+dataset[0] = dataset[0].str.strip() # arab has no caps
+dataset[1] = dataset[1].str.strip().str.lower()
+tab = '\t'
+enter = '\n'
 
+dataset[1] = tab + dataset[1].astype(str) + enter
+arab_text = dataset[0]
+latin_text = dataset[1]
 
-# Vectorize the data.
-input_texts = []
-target_texts = []
-input_characters = set()
-target_characters = set()
-with open(data_path, "r", encoding="utf-8") as f:
-    lines = f.read().split("\n")
-for line in lines[: min(num_samples, len(lines) - 1)]:
-    input_text, target_text, = line.split("\t")
-    # We use "tab" as the "start sequence" character
-    # for the targets, and "\n" as "end sequence" character.
-    target_text = "\t" + target_text + "\n"
-    input_texts.append(input_text)
-    target_texts.append(target_text)
-    for char in input_text:
-        if char not in input_characters:
-            input_characters.add(char)
-    for char in target_text:
-        if char not in target_characters:
-            target_characters.add(char)
+max_input_len = max([len(text) for text in arab_text])
+max_target_len = max([len(text) for text in latin_text])
 
-input_characters = sorted(list(input_characters))
-target_characters = sorted(list(target_characters))
-num_encoder_tokens = len(input_characters)
-num_decoder_tokens = len(target_characters)
-max_encoder_seq_length = max([len(txt) for txt in input_texts])
-max_decoder_seq_length = max([len(txt) for txt in target_texts])
+input_chars = sorted(list(set(''.join(arab_text))))
+target_chars = sorted(list(set(''.join(latin_text))))
 
-input_token_index = dict([(char, i) for i, char in enumerate(input_characters)])
-target_token_index = dict([(char, i) for i, char in enumerate(target_characters)])
+num_encoder_tokens = len(input_chars)
+num_decoder_tokens = len(target_chars)
+
+input_char_index = dict((char, i) for i, char in enumerate(input_chars))
+target_char_index = dict((char, i) for i, char in enumerate(target_chars))
 
 #Build the model
 # Define an input sequence and process it.
-encoder_inputs = keras.Input(shape=(None, num_encoder_tokens))
-encoder = keras.layers.LSTM(latent_dim, return_state=True)
+latent_dim = 128
+
+encoder_inputs = Input(shape=(None, num_encoder_tokens))
+encoder = LSTM(latent_dim, return_state=True)
 encoder_outputs, state_h, state_c = encoder(encoder_inputs)
 
 # We discard `encoder_outputs` and only keep the states.
 encoder_states = [state_h, state_c]
 
 # Set up the decoder, using `encoder_states` as initial state.
-decoder_inputs = keras.Input(shape=(None, num_decoder_tokens))
+decoder_inputs = Input(shape=(None, num_decoder_tokens))
 
 # We set up our decoder to return full output sequences,
 # and to return internal states as well. We don't use the
 # return states in the training model, but we will use them in inference.
-decoder_lstm = keras.layers.LSTM(latent_dim, return_sequences=True, return_state=True)
+decoder_lstm = LSTM(latent_dim, return_sequences=True, return_state=True)
 decoder_outputs, _, _ = decoder_lstm(decoder_inputs, initial_state=encoder_states)
-decoder_dense = keras.layers.Dense(num_decoder_tokens, activation="softmax")
+
+decoder_dense = Dense(num_decoder_tokens, activation="softmax")
 decoder_outputs = decoder_dense(decoder_outputs)
 
 # Define the model that will turn
 # `encoder_input_data` & `decoder_input_data` into `decoder_target_data`
-model = keras.Model([encoder_inputs, decoder_inputs], decoder_outputs)
+model = Model([encoder_inputs, decoder_inputs], decoder_outputs)
 
 # Restore the model
-model = keras.models.load_model('21nov2.h5', compile=False)
+model = keras.models.load_model('modeluse.h5', compile=False)
 
 # Define sampling models
 # Restore the model and construct the encoder and decoder.
@@ -99,8 +83,8 @@ decoder_model = keras.Model(
 
 # Reverse-lookup token index to decode sequences back to
 # something readable.
-reverse_input_char_index = dict((i, char) for char, i in input_token_index.items())
-reverse_target_char_index = dict((i, char) for char, i in target_token_index.items())
+reverse_input_char_index = dict((i, char) for char, i in input_char_index.items())
+reverse_target_char_index = dict((i, char) for char, i in target_char_index.items())
 
 def decode_sequence(input_seq):
     # Encode the input as state vectors.
@@ -140,10 +124,10 @@ def predict_output(input_text):
     words = input_text.split(' ')
     transliterated_words = []
     for word in words:
-        input_seq = np.zeros((1, max_encoder_seq_length, num_encoder_tokens), dtype='float32')
+        input_seq = np.zeros((1, max_input_len, num_encoder_tokens), dtype='float32')
         for t, char in enumerate(word):
-            input_seq[0, t, input_token_index[char]] = 1.0
-        input_seq[0, t + 1:, input_token_index[" "]] = 1.0
+            input_seq[0, t, input_char_index[char]] = 1.0
+        input_seq[0, t + 1:, input_char_index[" "]] = 1.0
         decoded_word = decode_sequence(input_seq)
         transliterated_words.append(decoded_word.rstrip('\n'))
     return ' '.join(transliterated_words)
