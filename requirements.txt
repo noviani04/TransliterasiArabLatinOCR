@@ -1,9 +1,7 @@
-pip
 tensorflow
 numpy
 keras
 pytesseract
 tesseract-ocr
-tesseract-ocr-ara
 pandas
 opencv-python-headless==4.5.5.64
