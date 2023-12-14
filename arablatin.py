@@ -90,7 +90,7 @@ if uploaded_file is not None:
     #texts = st.text_input("Teks Prediksi:", text)
     # Subheader
     st.subheader('Teks Arab Prediksi')
-    texts = st.text_input(y)
+    texts = st.text_input("Teks Prediksi:", y)
 
     #modeltransliterasi.decoder_output = modeltransliterasi.generate(text)
     #prediction = modeltransliterasi.decode(modeltransliterasi.output_decoding, modeltransliterasi.decoder_output[0])
@@ -102,6 +102,6 @@ if uploaded_file is not None:
     with st.form(key='my_form'):
         #texts = st.text_input(text, label='Tulisan Arab bisa diedit')
         submit_button = st.form_submit_button(label='Prediksi')
-        st.subheader('Teks Prediksi Transliterasi')
         prediction = model.predict_output(texts)
+    st.subheader('Teks Prediksi Transliterasi')
     st.text_area("Hasil Prediksi  Transliterasi:", prediction)
