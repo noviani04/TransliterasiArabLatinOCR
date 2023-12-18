@@ -4,3 +4,4 @@ keras
 pytesseract
 pandas
 opencv-python-headless
+python===3.9.0
