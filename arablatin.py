@@ -2,7 +2,7 @@ import streamlit as st
 import pytesseract
 import io
 from keras.utils import load_img
-import model
+import modeltrans
 
 #pytesseract.pytesseract.tesseract_cmd = None
 
